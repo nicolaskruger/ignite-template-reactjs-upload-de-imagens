@@ -22,7 +22,7 @@ export function CardList({ cards }: CardsProps): JSX.Element {
   const [imageUrl, setImageUrl] = useState('');
   // TODO FUNCTION HANDLE VIEW IMAGE
 
-  const handleViewImage = (url: string) => {
+  const handleViewImage = (url: string): void => {
     setImageUrl(url);
     disclosure.onOpen();
   };

@@ -36,14 +36,8 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
     }
   );
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState,
-    setError,
-    trigger,
-  } = useForm();
+  const { register, handleSubmit, reset, formState, setError, trigger } =
+    useForm();
   const { errors } = formState;
 
   const onSubmit = async (data: Record<string, unknown>): Promise<void> => {
@@ -68,19 +62,49 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
           setError={setError}
           trigger={trigger}
           // TODO SEND IMAGE ERRORS
+          error={errors.image}
           // TODO REGISTER IMAGE INPUT WITH VALIDATIONS
+          {...register('image', {
+            required: { value: true, message: 'Arquivo obrigatorio' },
+            validate: {
+              lessThan10MB: (v: File[]) =>
+                v[0].size < 100.0 * 10 ** 6 || 'O arquivo deve ser menor que 10MB',
+              acceptedFormats: (v: File[]): boolean =>
+                /(PNG$)|(JPEG$)|(GIF$)/.test(v[0].type) || 'Somente são aceitos arquivos PNG, JPEG e GIF',
+            },
+          })}
         />
 
         <TextInput
           placeholder="Título da imagem..."
           // TODO SEND TITLE ERRORS
+          error={errors.title}
           // TODO REGISTER TITLE INPUT WITH VALIDATIONS
+          {...register('title', {
+            required: 'Título obrigatorio',
+            minLength: {
+              value: 2,
+              message: 'Minimode 2 caracteres',
+            },
+            maxLength: {
+              value: 20,
+              message: 'Máximo de 20 caracteres',
+            },
+          })}
         />
 
         <TextInput
           placeholder="Descrição da imagem..."
           // TODO SEND DESCRIPTION ERRORS
+          error={errors.description}
           // TODO REGISTER DESCRIPTION INPUT WITH VALIDATIONS
+          {...register('description', {
+            required: 'Descrição obrigatoria',
+            maxLength: {
+              value: 65,
+              message: 'Máximo de 65 caracteres',
+            },
+          })}
         />
       </Stack>
 
