@@ -7,6 +7,12 @@ import { api } from '../../services/api';
 import { FileInput } from '../Input/FileInput';
 import { TextInput } from '../Input/TextInput';
 
+type Data = {
+  url: string;
+  title: string;
+  description: string;
+};
+
 interface FormAddImageProps {
   closeModal: () => void;
 }
@@ -31,8 +37,14 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
   const queryClient = useQueryClient();
   const mutation = useMutation(
     // TODO MUTATION API POST REQUEST,
+    async (data: Data) => {
+      await api.post('/api/images', data);
+    },
     {
       // TODO ONSUCCESS MUTATION
+      onSuccess: () => {
+        queryClient.invalidateQueries();
+      },
     }
   );
 
@@ -43,12 +55,34 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
   const onSubmit = async (data: Record<string, unknown>): Promise<void> => {
     try {
       // TODO SHOW ERROR TOAST IF IMAGE URL DOES NOT EXISTS
+      if (!imageUrl) {
+        toast({
+          status: 'info',
+          title: 'Imagem não adicionada',
+          description:
+            'É preciso adicionar e aguardar o upload de uma imagem antes de realizar o cadastro.',
+        });
+        return;
+      }
       // TODO EXECUTE ASYNC MUTATION
+      await mutation.mutate({ ...(data as Data), url: imageUrl });
       // TODO SHOW SUCCESS TOAST
+      toast({
+        status: 'success',
+        title: 'Imagem cadastrada',
+        description: 'Sua imagem foi cadastrada com sucesso.',
+      });
     } catch {
       // TODO SHOW ERROR TOAST IF SUBMIT FAILED
+      toast({
+        status: 'error',
+        title: 'Falha no cadastro',
+        description: 'Ocorreu um erro ao tentar cadastrar a sua imagem.',
+      });
     } finally {
       // TODO CLEAN FORM, STATES AND CLOSE MODAL
+      reset();
+      closeModal();
     }
   };
 
@@ -68,9 +102,11 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
             required: { value: true, message: 'Arquivo obrigatorio' },
             validate: {
               lessThan10MB: (v: File[]) =>
-                v[0].size < 100.0 * 10 ** 6 || 'O arquivo deve ser menor que 10MB',
+                v[0].size < 100.0 * 10 ** 6 ||
+                'O arquivo deve ser menor que 10MB',
               acceptedFormats: (v: File[]): boolean =>
-                /(PNG$)|(JPEG$)|(GIF$)/.test(v[0].type) || 'Somente são aceitos arquivos PNG, JPEG e GIF',
+                /(PNG$)|(JPEG$)|(GIF$)/i.test(v[0].type) ||
+                'Somente são aceitos arquivos PNG, JPEG e GIF',
             },
           })}
         />
